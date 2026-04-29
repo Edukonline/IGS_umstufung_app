@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
 	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
-	<id>umstufungmns</id>
-	<name>Umstufung MNS</name>
-	<summary>Verwaltung von Umstufungen der Schülerschaft</summary>
+	<id>kursumstufung</id>
+	<name>KursUmstufung</name>
+	<summary>Verwaltung von Kurs-Umstufungen (G-Kurs/E-Kurs)</summary>
 	<description>
-		Diese App digitalisiert den Prozess der Umstufung von Schülern (z. B. Wechsel von G-Kurs in E-Kurs).
+		Eine Erweiterung zur effizienten Verwaltung von Umstufungsanträgen zwischen verschiedenen Kurs-Niveaus.
 		Lehrkräfte können Anträge (Entwürfe) erstellen und an die Schulleitung einreichen.
 	</description>
-	<version>1.0.1</version>
+	<version>1.0.3</version>
 	<licence>agpl</licence>
-	<author>Schule</author>
-	<namespace>UmstufungMNS</namespace>
+	<author>Edukonline</author>
+	<namespace>KursUmstufung</namespace>
 	<category>organization</category>
 	<dependencies>
 		<nextcloud min-version="25" max-version="35" />
@@ -19,7 +19,7 @@
 	<navigations>
 		<navigation>
 			<name>Umstufung</name>
-			<route>umstufungmns.page.index</route>
+			<route>kursumstufung.page.index</route>
 			<icon>app.svg</icon>
 		</navigation>
 	</navigations>

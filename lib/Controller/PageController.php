@@ -1,5 +1,5 @@
 <?php
-namespace OCA\UmstufungMNS\Controller;
+namespace OCA\KursUmstufung\Controller;
 
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -15,6 +15,6 @@ class PageController extends Controller {
      * @NoCSRFRequired
      */
     public function index() {
-        return new TemplateResponse($this->appName, 'main');
+        return new TemplateResponse('kursumstufung', 'main');
     }
 }

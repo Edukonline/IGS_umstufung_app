@@ -1,13 +1,13 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import { generateUrl } from '@nextcloud/router'
 
-// Find the mount point
-const el = document.getElementById('umstufungmns-app')
-console.log('UmstufungMNS App is mounting on element:', el)
+const el = document.getElementById('kursumstufung-app')
 if (el) {
+    console.log('KursUmstufung App is mounting on element:', el)
     const app = createApp(App)
     app.mount(el)
-    console.log('UmstufungMNS App successfully mounted!')
+    console.log('KursUmstufung App successfully mounted!')
 } else {
-    console.error('UmstufungMNS App could not find element #umstufungmns-app')
+    console.error('KursUmstufung App could not find element #kursumstufung-app')
 }

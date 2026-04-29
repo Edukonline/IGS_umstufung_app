@@ -1,5 +1,5 @@
 <template>
-    <div id="content" class="app-umstufungmns" style="display: flex; height: 100%; min-height: 100vh; background: var(--color-main-background);">
+    <div id="content" class="app-kursumstufung" style="display: flex; height: 100%; min-height: 100vh; background: var(--color-main-background);">
         <!-- Seitennavigation -->
         <aside id="app-navigation" style="width: 300px; border-right: 1px solid var(--color-border); padding: 20px;">
             <ul class="with-icons">
@@ -30,23 +30,33 @@
 
                 <div v-else class="content-wrapper">
                     <!-- Kopfzeile -->
-                    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+                    <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px;">
                         <div>
                             <h2 style="margin: 0; font-size: 2em; color: var(--color-main-text);">
-                                {{ isSchulleitung ? 'Eingereichte Umstufungen' : 'Meine Umstufungs-Entwürfe' }}
+                                {{ isSchulleitung ? 'Eingereichte Anträge' : 'Meine Umstufungs-Entwürfe' }}
                             </h2>
                             <p style="margin: 5px 0 0; color: #888;">{{ isSchulleitung ? 'Übersicht aller Anträge zur Prüfung' : 'Hier können Sie Entwürfe erstellen und bearbeiten' }}</p>
                         </div>
-                        <button class="primary new-btn" @click="startNew" v-if="!showForm && !isSchulleitung">
-                            + Neuer Entwurf
-                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="export-btn" @click="exportToCSV" v-if="requests.length > 0">
+                                📊 Export (.csv)
+                            </button>
+                            <button class="primary new-btn" @click="startNew" v-if="!showForm && !isSchulleitung">
+                                + Neuer Entwurf
+                            </button>
+                        </div>
                     </header>
+
+                    <!-- Suche -->
+                    <div class="search-wrapper" v-if="requests.length > 0">
+                        <input type="text" v-model="searchQuery" class="search-input" placeholder="🔍 Suche nach Schülername...">
+                    </div>
 
                     <!-- Eingabeformular -->
                     <transition name="slide">
                         <div v-if="showForm" class="form-container">
                             <h3 style="margin-top: 0; color: var(--color-primary); font-size: 1.5em; margin-bottom: 25px;">
-                                {{ form.id ? '📝 Entwurf bearbeiten' : '✨ Neuer Umstufungs-Entwurf' }}
+                                {{ form.id ? 'Entwurf bearbeiten' : 'Neuer Umstufungs-Entwurf' }}
                             </h3>
                             
                             <div class="form-grid">
@@ -55,9 +65,16 @@
                                     <input type="text" v-model="form.studentName" class="form-input" placeholder="Vorname Nachname">
                                 </div>
                                 <div class="form-group">
+                                    <label class="form-label">Klasse</label>
+                                    <select v-model="form.class" class="form-input">
+                                        <option value="">Bitte wählen...</option>
+                                        <option v-for="c in availableClasses" :key="c" :value="c">{{ c }}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
                                     <label class="form-label">Fach</label>
                                     <select v-model="form.subject" class="form-input">
-                                        <option value="" disabled>Bitte wählen...</option>
+                                        <option value="">Bitte wählen...</option>
                                         <option v-for="s in subjects" :key="s" :value="s">{{ s }}</option>
                                     </select>
                                 </div>
@@ -93,31 +110,35 @@
                     <!-- Sammel-Senden Button -->
                     <div v-if="!isSchulleitung && hasDrafts" style="margin-bottom: 40px;">
                         <button class="submit-all-btn" @click="submitAll" :disabled="submitting">
-                            {{ submitting ? 'Wird gesendet...' : '🚀 Alle Entwürfe JETZT final an Schulleitung senden' }}
+                            {{ submitting ? 'Wird gesendet...' : '🚀 Alle Entwürfe JETZT final einreichen' }}
                         </button>
                     </div>
 
                     <!-- Datentabelle -->
                     <div class="table-container">
-                        <table class="mns-table">
+                        <table class="table-styled">
                             <thead>
                                 <tr>
                                     <th v-if="isSchulleitung">Lehrkraft</th>
                                     <th>Schüler:in</th>
+                                    <th>Klasse</th>
                                     <th>Fach</th>
                                     <th>Von</th>
                                     <th>Nach</th>
+                                    <th>Datum</th>
                                     <th>Status</th>
                                     <th style="text-align: right;">Aktionen</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="request in requests" :key="request.id" class="table-row">
-                                    <td v-if="isSchulleitung" style="color: var(--color-primary);">{{ request.userId }}</td>
+                                <tr v-for="request in filteredRequests" :key="request.id" class="table-row">
+                                    <td v-if="isSchulleitung" style="color: var(--color-primary); font-weight: 600;">{{ request.userName || request.userId }}</td>
                                     <td style="font-weight: 600; color: #fff;">{{ request.studentName }}</td>
+                                    <td style="font-family: monospace; font-weight: bold;">{{ request.class || '-' }}</td>
                                     <td>{{ request.subject }}</td>
                                     <td><span class="level-tag">{{ request.oldLevel }}</span></td>
                                     <td><span class="level-tag">{{ request.newLevel }}</span></td>
+                                    <td style="font-size: 0.85em; color: #777;">{{ formatDate(request.createdAt) }}</td>
                                     <td>
                                         <span :class="['status-badge', request.status]">
                                             {{ request.status === 'draft' ? 'Entwurf' : 'Eingereicht' }}
@@ -130,9 +151,9 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="requests.length === 0">
-                                    <td :colspan="isSchulleitung ? 7 : 6" class="empty-state">
-                                        Keine Einträge vorhanden. Legen Sie einen neuen Entwurf an!
+                                <tr v-if="filteredRequests.length === 0">
+                                    <td :colspan="isSchulleitung ? 9 : 8" class="empty-state">
+                                        {{ searchQuery ? 'Keine Treffer für diese Suche.' : 'Keine Einträge vorhanden. Legen Sie einen neuen Entwurf an!' }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -158,7 +179,9 @@ export default {
             isSchulleitung: false,
             requests: [],
             showForm: false,
+            searchQuery: '',
             subjects: ['Mathematik', 'Deutsch', 'Englisch', 'Chemie', 'Physik'],
+            availableClasses: this.generateClasses(),
             notification: {
                 show: false,
                 message: '',
@@ -167,6 +190,7 @@ export default {
             form: {
                 id: null,
                 studentName: '',
+                class: '',
                 subject: '',
                 oldLevel: 'G-Kurs',
                 newLevel: 'E-Kurs',
@@ -177,12 +201,37 @@ export default {
     computed: {
         hasDrafts() {
             return Array.isArray(this.requests) && this.requests.some(r => r.status === 'draft')
+        },
+        filteredRequests() {
+            if (!this.searchQuery) return this.requests
+            const query = this.searchQuery.toLowerCase()
+            return this.requests.filter(r => 
+                r.studentName.toLowerCase().includes(query) || 
+                (r.class && r.class.toLowerCase().includes(query))
+            )
         }
     },
     mounted() {
         this.loadData()
     },
     methods: {
+        generateClasses() {
+            const classes = []
+            for (let i = 5; i <= 10; i++) {
+                ['a', 'b', 'c'].forEach(zug => {
+                    classes.push(`${i}${zug}`)
+                })
+            }
+            return classes
+        },
+        formatDate(val) {
+            if (!val) return '-'
+            // Wenn es ein Objekt von Nextcloud ist {date: "...", ...}
+            const dateStr = val.date || val
+            const date = new Date(dateStr)
+            if (isNaN(date.getTime())) return '-'
+            return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        },
         notify(message, type = 'success') {
             this.notification.message = message;
             this.notification.type = type;
@@ -196,7 +245,7 @@ export default {
         async loadData() {
             this.loading = true
             try {
-                const url = generateUrl('/apps/umstufungmns/api/requests')
+                const url = generateUrl('/apps/kursumstufung/api/requests')
                 const response = await axios.get(url)
                 this.isSchulleitung = response.data.isSchulleitung || false
                 this.requests = response.data.requests || []
@@ -214,7 +263,7 @@ export default {
             }
         },
         startNew() {
-            this.form = { id: null, studentName: '', subject: '', oldLevel: 'G-Kurs', newLevel: 'E-Kurs', reason: '' };
+            this.form = { id: null, studentName: '', class: '', subject: '', oldLevel: 'G-Kurs', newLevel: 'E-Kurs', reason: '' };
             this.showForm = true;
         },
         editRequest(request) {
@@ -223,14 +272,14 @@ export default {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         async saveRequest() {
-            if (!this.form.studentName || !this.form.subject) {
-                this.notify('Bitte Name und Fach ausfüllen!', 'error');
+            if (!this.form.studentName || !this.form.class || !this.form.subject) {
+                this.notify('Bitte Name, Klasse und Fach ausfüllen!', 'error');
                 return;
             }
             this.saving = true;
             try {
                 if (this.form.id) {
-                    const url = generateUrl(`/apps/umstufungmns/api/requests/${this.form.id}`);
+                    const url = generateUrl(`/apps/kursumstufung/api/requests/${this.form.id}`);
                     const response = await axios.put(url, this.form);
                     const index = this.requests.findIndex(r => r.id === this.form.id);
                     if (index !== -1) {
@@ -238,13 +287,13 @@ export default {
                     }
                     this.notify('Änderungen erfolgreich gespeichert');
                 } else {
-                    const url = generateUrl('/apps/umstufungmns/api/requests');
+                    const url = generateUrl('/apps/kursumstufung/api/requests');
                     const response = await axios.post(url, this.form);
                     this.requests.push(response.data);
                     this.notify('Neuer Entwurf wurde angelegt');
                 }
                 this.showForm = false;
-                this.form = { id: null, studentName: '', subject: '', oldLevel: 'G-Kurs', newLevel: 'E-Kurs', reason: '' };
+                this.form = { id: null, studentName: '', class: '', subject: '', oldLevel: 'G-Kurs', newLevel: 'E-Kurs', reason: '' };
             } catch (error) {
                 const msg = error.response?.data?.error || error.message || 'Unbekannter Fehler';
                 this.notify('Speichern fehlgeschlagen: ' + msg, 'error');
@@ -255,7 +304,7 @@ export default {
         async deleteRequest(id) {
             if (!confirm('Wirklich löschen?')) return
             try {
-                await axios.delete(generateUrl(`/apps/umstufungmns/api/requests/${id}`))
+                await axios.delete(generateUrl(`/apps/kursumstufung/api/requests/${id}`))
                 this.requests = this.requests.filter(r => r.id !== id)
                 this.notify('Eintrag wurde gelöscht');
             } catch (error) {
@@ -263,23 +312,69 @@ export default {
             }
         },
         async submitAll() {
-            if (!confirm('Alle Entwürfe jetzt final einreichen?')) return
+            if (!confirm('Alle Entwürfe jetzt final einreichen? Dies kann nicht rückgängig gemacht werden.')) return
             this.submitting = true
             try {
-                await axios.post(generateUrl('/apps/umstufungmns/api/submit_all'))
+                await axios.post(generateUrl('/apps/kursumstufung/api/submit_all'))
                 await this.loadData()
-                this.notify('Alle Anträge wurden erfolgreich an die Schulleitung übermittelt');
+                this.notify('Alle Anträge wurden erfolgreich übermittelt');
             } catch (error) {
                 this.notify('Fehler beim Übermitteln der Anträge', 'error');
             } finally {
                 this.submitting = false
             }
+        },
+        exportToCSV() {
+            const rows = this.filteredRequests.map(r => ({
+                'ID': r.id,
+                'Lehrkraft': r.userName || r.userId,
+                'Schüler:in': r.studentName,
+                'Klasse': r.class,
+                'Fach': r.subject,
+                'Von': r.oldLevel,
+                'Nach': r.newLevel,
+                'Status': r.status,
+                'Erstellt am': this.formatDate(r.createdAt)
+            }))
+
+            if (rows.length === 0) return
+
+            const separator = ';'
+            const keys = Object.keys(rows[0])
+            const csvContent = [
+                keys.join(separator),
+                ...rows.map(row => keys.map(k => `"${row[k]}"`).join(separator))
+            ].join('\n')
+
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' })
+            const link = document.createElement("a")
+            const url = URL.createObjectURL(blob)
+            link.setAttribute("href", url)
+            link.setAttribute("download", `Umstufungen_Export_${new Date().toISOString().split('T')[0]}.csv`)
+            link.style.visibility = 'hidden'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
         }
     }
 }
 </script>
 
 <style scoped>
+/* Suche */
+.search-wrapper {
+    margin-bottom: 25px;
+}
+.search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: white;
+}
+
 /* Banner */
 .notification-banner {
     position: sticky;
@@ -362,6 +457,20 @@ export default {
     border-radius: 10px;
     font-size: 1.05em;
 }
+.export-btn {
+    background: #333;
+    color: #ccc;
+    border: 1px solid #444;
+    padding: 14px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.export-btn:hover {
+    background: #444;
+    color: white;
+}
 .action-btn {
     padding: 14px 35px;
     border-radius: 8px;
@@ -395,11 +504,11 @@ export default {
     overflow: hidden;
     border: 1px solid #333;
 }
-.mns-table {
+.table-styled {
     width: 100%;
     border-collapse: collapse;
 }
-.mns-table th {
+.table-styled th {
     background: #252525;
     padding: 18px 20px;
     text-align: left;
@@ -477,5 +586,14 @@ export default {
 @keyframes slideDown {
     from { transform: translateY(-100%); }
     to { transform: translateY(0); }
+}
+
+select.form-input {
+    height: 50px;
+    cursor: pointer;
+}
+select.form-input option {
+    background: #222;
+    color: white;
 }
 </style>

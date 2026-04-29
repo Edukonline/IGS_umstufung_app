@@ -1,44 +1,52 @@
 <?php
-namespace OCA\UmstufungMNS\AppInfo;
+namespace OCA\KursUmstufung\AppInfo;
 
-use OCA\UmstufungMNS\Controller\RequestController;
-use OCA\UmstufungMNS\Controller\PageController;
-use OCA\UmstufungMNS\Service\RequestService;
-use OCA\UmstufungMNS\Db\RequestMapper;
+use OCA\KursUmstufung\Controller\RequestController;
+use OCA\KursUmstufung\Controller\PageController;
+use OCA\KursUmstufung\Service\RequestService;
+use OCA\KursUmstufung\Db\RequestMapper;
 use OCP\AppFramework\App;
-use OCP\IContainer;
+use OCP\AppFramework\Bootstrap\IBootstrap;
+use OCP\AppFramework\Bootstrap\IBootContext;
+use OCP\AppFramework\Bootstrap\IRegistrationContext;
 
-class Application extends App {
+class Application extends App implements IBootstrap {
     public function __construct(array $urlParams = []) {
-        parent::__construct('umstufungmns', $urlParams);
+        parent::__construct('kursumstufung', $urlParams);
+    }
 
-        $container = $this->getContainer();
-
-        $container->registerService(RequestService::class, function (IContainer $c) {
+    public function register(IRegistrationContext $context): void {
+        // Services registrieren
+        $context->registerService('RequestService', function($c) {
             return new RequestService(
-                $c->query(RequestMapper::class)
+                $c->get('RequestMapper'),
+                $c->get(\OCP\IUserManager::class)
             );
         });
 
-        $container->registerService(RequestMapper::class, function (IContainer $c) {
+        $context->registerService('RequestMapper', function($c) {
             return new RequestMapper(
-                $c->query('ServerContainer')->getDatabaseConnection()
+                $c->get(\OCP\IDBConnection::class)
             );
         });
 
-        $container->registerService('RequestController', function (IContainer $c) {
+        // Controller registrieren
+        $context->registerService('RequestController', function($c) {
             return new RequestController(
-                'umstufungmns',
-                $c->query('Request'),
-                $c->query(RequestService::class)
+                'kursumstufung',
+                $c->get(\OCP\IRequest::class),
+                $c->get('RequestService')
             );
         });
 
-        $container->registerService('PageController', function (IContainer $c) {
+        $context->registerService('PageController', function($c) {
             return new PageController(
-                'umstufungmns',
-                $c->query('Request')
+                'kursumstufung',
+                $c->get(\OCP\IRequest::class)
             );
         });
+    }
+
+    public function boot(IBootContext $context): void {
     }
 }

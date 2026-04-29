@@ -1,7 +1,7 @@
 <?php
-namespace OCA\UmstufungMNS\Controller;
+namespace OCA\KursUmstufung\Controller;
 
-use OCA\UmstufungMNS\Service\RequestService;
+use OCA\KursUmstufung\Service\RequestService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
@@ -62,13 +62,14 @@ class RequestController extends Controller {
     public function create() {
         $userId = $this->getUserId();
         $studentName = $this->request->getParam('studentName', '');
+        $class = $this->request->getParam('class', '');
         $subject = $this->request->getParam('subject', '');
         $oldLevel = $this->request->getParam('oldLevel', '');
         $newLevel = $this->request->getParam('newLevel', '');
         $reason = $this->request->getParam('reason', '');
 
         try {
-            $request = $this->service->create($userId, $studentName, $subject, $oldLevel, $newLevel, $reason);
+            $request = $this->service->create($userId, $studentName, $class, $subject, $oldLevel, $newLevel, $reason);
             return new DataResponse($request);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage()], 500);
@@ -81,6 +82,7 @@ class RequestController extends Controller {
     public function update($id) {
         $userId = $this->getUserId();
         $studentName = $this->request->getParam('studentName', '');
+        $class = $this->request->getParam('class', '');
         $subject = $this->request->getParam('subject', '');
         $oldLevel = $this->request->getParam('oldLevel', '');
         $newLevel = $this->request->getParam('newLevel', '');
@@ -89,7 +91,7 @@ class RequestController extends Controller {
         try {
             // Sicherstellen, dass ID eine Zahl ist
             $requestId = (int)$id;
-            $request = $this->service->update($requestId, $userId, $studentName, $subject, $oldLevel, $newLevel, $reason);
+            $request = $this->service->update($requestId, $userId, $studentName, $class, $subject, $oldLevel, $newLevel, $reason);
             return new DataResponse($request);
         } catch (\Exception $e) {
             return new DataResponse([

@@ -1,6 +1,6 @@
-# UmstufungMNS - Nextcloud App
+# KursUmstufung - Nextcloud App
 
-Eine professionelle Nextcloud-Erweiterung für die Main-Taunus-Schule (MNS) zur effizienten Verwaltung von Umstufungsanträgen (G-Kurs/E-Kurs).
+Eine professionelle Nextcloud-Erweiterung zur effizienten Verwaltung von Umstufungsanträgen (G-Kurs/E-Kurs) an Schulen.
 
 ## 🌟 Features
 
@@ -19,7 +19,7 @@ Eine professionelle Nextcloud-Erweiterung für die Main-Taunus-Schule (MNS) zur 
 
 ## 🚀 Installation
 
-1. Klonen Sie dieses Repository in den Ordner `apps/umstufungmns` Ihrer Nextcloud-Instanz.
+1. Klonen Sie dieses Repository in den Ordner `apps/kursumstufung` Ihrer Nextcloud-Instanz.
 2. Führen Sie im App-Ordner folgende Befehle aus:
    ```bash
    npm install
@@ -36,7 +36,7 @@ Die App wurde unter Berücksichtigung strenger Datenschutzrichtlinien entwickelt
 
 ## 📄 Lizenz
 
-Proprietär - Entwickelt für die Main-Taunus-Schule.
+Proprietär / Open Source (nach Wahl).
 
 ---
-*Entwickelt mit ❤️ für die MNS.*
+*Entwickelt für den Einsatz in modernen Bildungseinrichtungen.*

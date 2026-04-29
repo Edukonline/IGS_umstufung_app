@@ -22,7 +22,7 @@ services:
       - db
     volumes:
       - nextcloud:/var/www/html
-      - .:/var/www/html/custom_apps/umstufungmns
+      - .:/var/www/html/custom_apps/kursumstufung
     environment:
       - MYSQL_PASSWORD=nextcloud
       - MYSQL_DATABASE=nextcloud

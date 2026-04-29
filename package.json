@@ -1,7 +1,7 @@
 {
-  "name": "umstufungmns",
-  "version": "1.0.0",
-  "description": "Umstufung MNS App",
+  "name": "kursumstufung",
+  "version": "1.0.1",
+  "description": "KursUmstufung App for Nextcloud",
   "private": true,
   "scripts": {
     "build": "webpack --node-env production --progress",

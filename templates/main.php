@@ -1,5 +1,5 @@
 <?php
-\OCP\Util::addScript('umstufungmns', 'umstufungmns-main');
-\OCP\Util::addStyle('umstufungmns', 'main');
+\OCP\Util::addScript('kursumstufung', 'kursumstufung-main');
+\OCP\Util::addStyle('kursumstufung', 'main');
 ?>
-<div id="umstufungmns-app" style="height: 100%; width: 100%;"></div>
+<div id="kursumstufung-app" style="height: 100%; width: 100%;"></div>
