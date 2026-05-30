@@ -1,42 +1,41 @@
 # KursUmstufung - Nextcloud App
 
-Eine professionelle Nextcloud-Erweiterung zur effizienten Verwaltung von Umstufungsanträgen (G-Kurs/E-Kurs) an Schulen.
+A professional Nextcloud extension for the efficient management of course level change requests (G-Course/E-Course) at schools.
 
-## 🌟 Features
+## Features
 
-- **Lehrkraft-Dashboard**: Erstellen, Bearbeiten und Löschen von Umstufungs-Entwürfen.
-- **Automatisierte Logik**: Intelligente Vorauswahl von Fächern und automatische Synchronisation der Kurs-Niveaus (G -> E / E -> G).
-- **Sammel-Einreichung**: Mehrere Entwürfe können gesammelt mit einem Klick an die Schulleitung übermittelt werden.
-- **Schulleitungs-Ansicht**: Zentrale Übersicht aller eingereichten Anträge (nur für Administratoren oder Mitglieder der Gruppe `schulleitung` sichtbar).
-- **Modernes UI/UX**: Vollständig integriert in das Nextcloud-Design, unterstützt Dark Mode und bietet flüssige Animationen sowie Echtzeit-Feedback-Banner.
+*   **Teacher Dashboard:** Create, edit, and delete reclassification drafts.
+*   **Automated Logic:** Intelligent pre-selection of subjects and automatic synchronization of course levels (G -> E / E -> G).
+*   **Bulk Submission:** Multiple drafts can be submitted collectively to the school administration with a single click.
+*   **School Administration View:** Central overview of all submitted applications (only visible to administrators or members of the `schulleitung` group).
+*   **Modern UI/UX:** Fully integrated into the Nextcloud design, supports Dark Mode, and offers fluid animations as well as real-time feedback banners.
 
-## 🛠 Technologie-Stack
+## Technology Stack
 
-- **Backend**: PHP 8.x (Nextcloud App Framework)
-- **Frontend**: Vue.js 3, Axios, Nextcloud-Components
-- **Datenbank**: MySQL/MariaDB (via Nextcloud DB Schema)
-- **Design**: Vanilla CSS mit Nextcloud Design-Tokens für maximale Kompatibilität.
+*   **Backend:** PHP 8.x (Nextcloud App Framework)
+*   **Frontend:** Vue.js 3, Axios, Nextcloud-Components
+*   **Database:** MySQL/MariaDB (via Nextcloud DB Schema)
+*   **Design:** Vanilla CSS with Nextcloud design tokens for maximum compatibility.
 
-## 🚀 Installation
+## Installation
 
-1. Klonen Sie dieses Repository in den Ordner `apps/kursumstufung` Ihrer Nextcloud-Instanz.
-2. Führen Sie im App-Ordner folgende Befehle aus:
-   ```bash
-   npm install
-   npm run build
-   ```
-3. Aktivieren Sie die App über das Nextcloud App-Menü.
+1.  Clone this repository into the `apps/kursumstufung` folder of your Nextcloud instance.
+2.  Run the following commands inside the app folder:
+```bash
+    npm install
+    npm run build
+    ```
+3.  Enable the app via the Nextcloud app management menu.
 
-## 🔒 Datenschutz (DSGVO)
+## Data Protection (GDPR)
 
-Die App wurde unter Berücksichtigung strenger Datenschutzrichtlinien entwickelt:
-- **Rollenkonzept**: Striktes Need-to-know-Prinzip bei der Dateneinsicht.
-- **Minimale Datenspeicherung**: Nur prozessrelevante Daten werden erfasst.
-- **Kein Tracking**: Es findet keine Analyse von Nutzerverhalten statt.
+The app was developed in strict compliance with data protection guidelines:
+*   **Role Concept:** Strict need-to-know principle regarding data access.
+*   **Minimal Data Storage:** Only data strictly relevant to the process is recorded.
+*   **No Tracking:** No analysis of user behavior takes place.
 
-## 📄 Lizenz
+## License
 
-Proprietär / Open Source (nach Wahl).
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. 
 
----
-*Entwickelt für den Einsatz in modernen Bildungseinrichtungen.*
+Since this is a Nextcloud application, it inherits the AGPL-3.0 license requirements of the Nextcloud ecosystem to ensure that the software remains free and open-source. You are free to use, modify, and distribute this software, provided that any derivative works are also distributed under the same license and the source code is made available to users interacting with the app over a network.
