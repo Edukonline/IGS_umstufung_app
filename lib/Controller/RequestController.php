@@ -33,7 +33,8 @@ class RequestController extends Controller {
             return false;
         }
         $groupManager = \OC::$server->getGroupManager();
-        return $groupManager->isAdmin($userId) || $groupManager->isInGroup($userId, 'schulleitung');
+        $adminGroup = \OC::$server->getConfig()->getAppValue('kursumstufung', 'admin_group', 'schulleitung');
+        return $groupManager->isAdmin($userId) || $groupManager->isInGroup($userId, $adminGroup);
     }
 
     /**

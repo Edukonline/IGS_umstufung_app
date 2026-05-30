@@ -23,4 +23,7 @@
 			<icon>app.svg</icon>
 		</navigation>
 	</navigations>
+	<settings>
+		<admin>OCA\KursUmstufung\Settings\Admin</admin>
+	</settings>
 </info>
