@@ -17,23 +17,6 @@ A professional Nextcloud extension for the efficient management of course level 
 *   **Database:** MySQL/MariaDB (via Nextcloud DB Schema)
 *   **Design:** Vanilla CSS with Nextcloud design tokens for maximum compatibility.
 
-## Installation
-
-1.  Clone this repository into the `apps/kursumstufung` folder of your Nextcloud instance.
-2.  Run the following commands inside the app folder:
-```bash
-    npm install
-    npm run build
-    ```
-3.  Enable the app via the Nextcloud app management menu.
-
-## Data Protection (GDPR)
-
-The app was developed in strict compliance with data protection guidelines:
-*   **Role Concept:** Strict need-to-know principle regarding data access.
-*   **Minimal Data Storage:** Only data strictly relevant to the process is recorded.
-*   **No Tracking:** No analysis of user behavior takes place.
-
 ## License
 
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. 
