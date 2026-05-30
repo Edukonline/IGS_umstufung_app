@@ -1,0 +1,37 @@
+name: Build and Release App
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Dependencies & Build
+      run: |
+        npm ci
+        npm run build
+
+    - name: Package App
+      run: |
+        mkdir -p build/kursumstufung
+        # Copy required folders and files
+        cp -r appinfo css img js lib src templates build/kursumstufung/
+        cp package.json package-lock.json webpack.config.js README.md CHANGELOG.md LICENSE build/kursumstufung/
+        # Create tarball
+        cd build
+        tar -czvf kursumstufung.tar.gz kursumstufung
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/kursumstufung.tar.gz

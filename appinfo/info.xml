@@ -23,6 +23,11 @@
 			<icon>app.svg</icon>
 		</navigation>
 	</navigations>
+	<repository>https://github.com/Edukonline/IGS_umstufung_app</repository>
+	<bugs>https://github.com/Edukonline/IGS_umstufung_app/issues</bugs>
+	<screenshot>https://raw.githubusercontent.com/Edukonline/IGS_umstufung_app/main/img/screenshot-dashboard.png</screenshot>
+	<screenshot>https://raw.githubusercontent.com/Edukonline/IGS_umstufung_app/main/img/screenshot-settings.png</screenshot>
+
 	<settings>
 		<admin>OCA\KursUmstufung\Settings\Admin</admin>
 	</settings>

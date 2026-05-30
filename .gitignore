@@ -11,3 +11,5 @@ dist/
 js/
 *.swp
 *.bak
+*.key
+*.csr
