@@ -21,8 +21,7 @@
     },
     "require-dev": {
         "nextcloud/ocp": "^30.0",
-        "phpunit/phpunit": "^9.6",
-        "psr/log": "^3.0"
+        "phpunit/phpunit": "^9.6"
     },
     "scripts": {
         "test:unit": "phpunit --configuration phpunit.xml"
