@@ -3,6 +3,10 @@ on:
   release:
     types: [published]
 
+# Erforderlich, damit der GITHUB_TOKEN das gebaute Tarball ans Release anhängen darf.
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
