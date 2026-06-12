@@ -1,0 +1,21 @@
+graph TD
+  subgraph Metadata ["Project: KursUmstufung | Ver: 1.0.3 | Date: 2026-06-05"]
+    direction TB
+    style Metadata fill:#fff,stroke:#000,stroke-width:2px,font-size:16px
+  end
+
+  Client[Vue.js Frontend Browser]
+  NC_Core[Nextcloud Core Framework]
+  Controller[PHP RequestController]
+  DB[(Nextcloud Database)]
+  Settings[SettingsController]
+
+  Client -- Axios /api/requests --> NC_Core
+  Client -- Axios /api/submit_all --> NC_Core
+  Client -- Axios /api/settings/adminGroup --> NC_Core
+
+  NC_Core -- OCP Authentication & CSRF Check --> Controller
+  NC_Core -- OCP Authentication --> Settings
+
+  Controller -- IQueryBuilder --> DB
+  Settings -- IConfig / appconfig --> DB

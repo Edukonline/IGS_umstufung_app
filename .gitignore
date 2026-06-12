@@ -22,3 +22,7 @@ js/
 # Release-Artefakte (werden von der CI gebaut)
 build/
 *.tar.gz
+
+# Interne Audit-Berichte (nicht öffentlich)
+Technical_Reviews/
+appid.txt

@@ -1,24 +1,77 @@
-# KursUmstufung - Nextcloud App
+---
+title: KursUmstufung App (Nextcloud)
+version: 1.0.4
+last_updated: 2026-06-12
+author: Edukonline
+---
 
-A professional Nextcloud extension for the efficient management of course level change requests (G-Course/E-Course) at schools.
+# KursUmstufung (Nextcloud App)
 
-## Features
+![License](https://img.shields.io/badge/License-AGPLv3-blue.svg)
+![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
-*   **Teacher Dashboard:** Create, edit, and delete reclassification drafts.
-*   **Automated Logic:** Intelligent pre-selection of subjects and automatic synchronization of course levels (G -> E / E -> G).
-*   **Bulk Submission:** Multiple drafts can be submitted collectively to the school administration with a single click.
-*   **School Administration View:** Central overview of all submitted applications (only visible to administrators or members of the `schulleitung` group).
-*   **Modern UI/UX:** Fully integrated into the Nextcloud design, supports Dark Mode, and offers fluid animations as well as real-time feedback banners.
+## Project Overview
+Eine Nextcloud-Erweiterung zur effizienten Verwaltung von Umstufungsanträgen zwischen verschiedenen Kurs-Niveaus (z.B. G-Kurs und E-Kurs).
+Lehrkräfte legen Anträge als Entwürfe an, speichern und reichen sie gesammelt ein. Die Schulleitung sieht alle eingereichten Anträge zentral, kann sie **genehmigen oder ablehnen** (mit Begründung), und die einreichende Lehrkraft wird per Nextcloud-Benachrichtigung über die Entscheidung informiert.
 
-## Technology Stack
+## Tech Stack
+*   **Backend:** Nextcloud App Framework (PHP 8), Schichtenarchitektur (Controller → Service → QBMapper)
+*   **Frontend:** Vue 3 (eigene Komponenten, `@nextcloud/axios`/`-router`/`-initial-state`)
+*   **Database:** Nextcloud DBAL (MySQL, PostgreSQL, SQLite)
+*   **Build-System:** Node.js, Webpack, npm
+*   **Tests/CI:** PHPUnit (Service-/Autorisierungslogik), GitHub Actions (PHP-Lint, Unit-Tests, Frontend-Build, Secret-Scan)
 
-*   **Backend:** PHP 8.x (Nextcloud App Framework)
-*   **Frontend:** Vue.js 3, Axios, Nextcloud-Components
-*   **Database:** MySQL/MariaDB (via Nextcloud DB Schema)
-*   **Design:** Vanilla CSS with Nextcloud design tokens for maximum compatibility.
+## Workflow
+`draft` (Entwurf, nur Ersteller) → `submitted` (eingereicht, Schulleitung sichtbar) → `approved` / `rejected` (Entscheidung der Schulleitung). Fächer und Klassen sind in den Admin-Einstellungen konfigurierbar; ein Schuljahres-Filter erlaubt das Archivieren über Jahre.
 
-## License
+## Tests
+```bash
+composer install
+composer test:unit
+```
 
-This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. 
+## Getting Started
 
-Since this is a Nextcloud application, it inherits the AGPL-3.0 license requirements of the Nextcloud ecosystem to ensure that the software remains free and open-source. You are free to use, modify, and distribute this software, provided that any derivative works are also distributed under the same license and the source code is made available to users interacting with the app over a network.
+### Voraussetzungen
+*   Laufende Nextcloud-Instanz (Version 25 bis 35)
+*   Node.js (v18+) und npm
+
+### Entwicklung & Build
+Um die App für die Entwicklung oder Produktion zu bauen:
+
+```bash
+# 1. Abhängigkeiten installieren
+npm install
+
+# 2. Vue.js Frontend kompilieren
+npm run build
+```
+
+### Installation in Nextcloud
+1. Kopiere diesen Ordner in dein Nextcloud `apps/` oder `custom_apps/` Verzeichnis unter dem Namen `kursumstufung`.
+2. Aktiviere die App über die Kommandozeile:
+```bash
+sudo -u www-data php occ app:enable kursumstufung
+```
+
+## Project Structure
+```text
+kursumstufung/
+├── appinfo/            # App Metadaten (info.xml, routes.php)
+├── css/                # Stylesheets
+├── docs/               # Single Source of Truth Dokumentation
+├── img/                # App-Icons und Screenshots
+├── js/                 # Webpack-generierte Frontend-Scripte
+├── lib/                # PHP Backend-Code
+│   ├── Constants/      # Status- und Niveau-Konstanten
+│   ├── Controller/     # API Endpunkte (dünn, delegieren an Service)
+│   ├── Db/             # Entity + QBMapper
+│   ├── Exception/      # Fachliche Exceptions (Validation/Forbidden)
+│   ├── Migration/      # Datenbank-Schemas
+│   ├── Notification/   # Nextcloud-Benachrichtigungen (Notifier)
+│   ├── Service/        # Geschäftslogik, Validierung, Autorisierung
+│   └── Settings/       # Admin-Einstellungen
+├── src/                # Vue.js Quellcode (Komponenten, Services, Utils)
+├── templates/          # PHP Templates für den Initialeinstieg
+└── tests/              # PHPUnit-Tests
+```
