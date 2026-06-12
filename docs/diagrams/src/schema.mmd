@@ -1,18 +1,26 @@
+%% Project: KursUmstufung | Ver: 1.0.4 | Date: 2026-06-12
+%% Hinweis: erDiagram unterstuetzt kein subgraph. Die Metadaten werden
+%% als eigene Entitaet "_Metadata" sichtbar mitgerendert (Burn-in).
 erDiagram
-  subgraph Metadata
-    %% Project: KursUmstufung | Ver: 1.0.3 | Date: 2026-06-05
-  end
+  _Metadata {
+    string project "KursUmstufung"
+    string version "1.0.4"
+    string date "2026-06-12"
+  }
 
   kurs_umstufung_requests {
     integer id PK
-    string user_id "Nextcloud User ID"
+    string user_id "Nextcloud User ID, indexed"
     string student_name
     string student_class "nullable"
     string subject
-    string old_level
-    string new_level
+    string old_level "G-Kurs / E-Kurs"
+    string new_level "G-Kurs / E-Kurs"
     text reason "nullable"
-    string status "draft / submitted"
+    string status "draft / submitted / approved / rejected, indexed"
+    string school_year "z.B. 2025/2026, nullable"
+    string decided_by "Nextcloud User ID der Schulleitung, nullable"
+    text decision_reason "nullable"
     datetime created_at
     datetime updated_at "nullable"
   }
@@ -22,4 +30,5 @@ erDiagram
     string displayname
   }
 
-  oc_users ||--o{ kurs_umstufung_requests : "creates (logical relation)"
+  oc_users ||--o{ kurs_umstufung_requests : "erstellt (user_id, logisch)"
+  oc_users ||--o{ kurs_umstufung_requests : "entscheidet (decided_by, logisch)"

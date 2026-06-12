@@ -7,6 +7,13 @@ author: Edukonline
 
 # Technical Reference
 
+## Diagramme
+- System-Architektur: `docs/diagrams/src/architecture.mmd` → `docs/diagrams/img/architecture.png`
+- Authentifizierungs-Flow: `docs/diagrams/src/auth-flow.mmd` → `docs/diagrams/img/auth-flow.png`
+- Datenbank-ERD: `docs/diagrams/src/schema.mmd` → `docs/diagrams/img/schema.png`
+
+Rendern mit `sh docs/render_diagrams.sh` (benötigt `@mermaid-js/mermaid-cli`).
+
 ## Architecture Overview
 Die `KursUmstufung` App folgt einer klaren Schichtenarchitektur:
 1.  **Controller (`lib/Controller/`)** — dünn. Nehmen HTTP-Parameter entgegen, delegieren an Services, mappen Exceptions auf HTTP-Codes. Keine Geschäftslogik.

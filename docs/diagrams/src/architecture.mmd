@@ -1,21 +1,50 @@
 graph TD
-  subgraph Metadata ["Project: KursUmstufung | Ver: 1.0.3 | Date: 2026-06-05"]
+  subgraph Metadata ["Project: KursUmstufung | Ver: 1.0.4 | Date: 2026-06-12"]
     direction TB
     style Metadata fill:#fff,stroke:#000,stroke-width:2px,font-size:16px
   end
 
-  Client[Vue.js Frontend Browser]
-  NC_Core[Nextcloud Core Framework]
-  Controller[PHP RequestController]
-  DB[(Nextcloud Database)]
-  Settings[SettingsController]
+  subgraph Frontend ["Frontend (Vue 3 SPA)"]
+    App[App.vue Orchestrator]
+    Comp[RequestForm / RequestTable / NotificationBanner]
+    Api[services/api.js]
+    App --> Comp
+    App --> Api
+  end
 
-  Client -- Axios /api/requests --> NC_Core
-  Client -- Axios /api/submit_all --> NC_Core
-  Client -- Axios /api/settings/adminGroup --> NC_Core
+  NC[Nextcloud Core<br/>Auth + CSRF + Routing]
 
-  NC_Core -- OCP Authentication & CSRF Check --> Controller
-  NC_Core -- OCP Authentication --> Settings
+  subgraph Controllers ["lib/Controller"]
+    PageC[PageController]
+    ReqC[RequestController]
+    SetC[SettingsController]
+  end
 
-  Controller -- IQueryBuilder --> DB
-  Settings -- IConfig / appconfig --> DB
+  subgraph Services ["lib/Service"]
+    Auth[AuthorizationService]
+    ReqS[RequestService<br/>Validierung + Workflow]
+    Cfg[ConfigService]
+    Notif[NotificationService]
+  end
+
+  Mapper[RequestMapper - QBMapper]
+  DB[(Nextcloud DBAL<br/>kurs_umstufung_requests)]
+  AppCfg[(appconfig)]
+  Notifier[Notifier -> Nextcloud Notifications]
+
+  Api -- "Axios /api/requests, /decide, /submit_all" --> NC
+  NC --> ReqC
+  NC --> SetC
+  NC -- "initial-state" --> PageC
+  PageC -- "isSchulleitung, subjects, classes" --> App
+
+  ReqC --> Auth
+  ReqC --> ReqS
+  SetC --> Cfg
+  Auth --> Cfg
+  ReqS --> Cfg
+  ReqS --> Mapper
+  ReqS --> Notif
+  Notif --> Notifier
+  Mapper -- IQueryBuilder --> DB
+  Cfg --> AppCfg

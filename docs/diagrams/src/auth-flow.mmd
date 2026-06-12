@@ -1,0 +1,40 @@
+sequenceDiagram
+  autonumber
+  Note over Browser,DB: Project: KursUmstufung | Ver: 1.0.4 | Date: 2026-06-12
+
+  actor Browser as Lehrkraft / Schulleitung
+  participant NC as Nextcloud Core
+  participant Page as PageController
+  participant Req as RequestController
+  participant Auth as AuthorizationService
+  participant Grp as IGroupManager / IConfig
+  participant Svc as RequestService
+  participant DB as Nextcloud DBAL
+
+  Browser->>NC: Login (Nextcloud-Session)
+  NC-->>Browser: Session-Cookie + requesttoken (CSRF)
+
+  Browser->>NC: GET /apps/kursumstufung/ (Seite)
+  NC->>Page: index() (@NoCSRFRequired)
+  Page->>Auth: isSchulleitung()
+  Auth->>Grp: isAdmin() / isInGroup(admin_group)
+  Grp-->>Auth: true/false
+  Auth-->>Page: Rolle
+  Page-->>Browser: HTML + initial-state (Rolle, Faecher, Klassen)
+
+  Browser->>NC: Axios GET /api/requests (mit Session + CSRF)
+  NC->>NC: Auth- & CSRF-Pruefung
+  NC->>Req: index()
+  Req->>Auth: getUserId() / isSchulleitung()
+  Auth-->>Req: userId, Rolle
+  alt Schulleitung
+    Req->>Svc: findAllSubmitted()
+  else Lehrkraft
+    Req->>Svc: findAllByUser(userId)
+  end
+  Svc->>DB: QueryBuilder (Prepared Statements)
+  DB-->>Svc: Datensaetze
+  Svc-->>Req: Anträge (rollen-gefiltert)
+  Req-->>Browser: DataResponse JSON
+
+  Note over Req,Svc: POST /api/requests/{id}/decide erzwingt serverseitig isSchulleitung() -> sonst 403
