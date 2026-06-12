@@ -1,0 +1,63 @@
+<template>
+    <transition name="fade">
+        <div v-if="notification.show" :class="['notification-banner', notification.type]">
+            <span class="icon">{{ notification.type === 'success' ? '✅' : '⚠️' }}</span>
+            <span class="message">{{ notification.message }}</span>
+            <button class="close-btn" @click="$emit('close')">&times;</button>
+        </div>
+    </transition>
+</template>
+
+<script>
+export default {
+    name: 'NotificationBanner',
+    props: {
+        notification: {
+            type: Object,
+            required: true,
+        },
+    },
+    emits: ['close'],
+}
+</script>
+
+<style scoped>
+.notification-banner {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.notification-banner.success {
+    background: var(--color-success, #27ae60);
+    color: var(--color-primary-text, #fff);
+}
+.notification-banner.error {
+    background: var(--color-error, #c0392b);
+    color: var(--color-primary-text, #fff);
+}
+.notification-banner .message {
+    flex-grow: 1;
+    font-weight: 600;
+}
+.close-btn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 1.5em;
+    cursor: pointer;
+    opacity: 0.8;
+}
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

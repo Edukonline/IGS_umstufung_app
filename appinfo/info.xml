@@ -8,7 +8,7 @@
 		Eine Erweiterung zur effizienten Verwaltung von Umstufungsanträgen zwischen verschiedenen Kurs-Niveaus.
 		Lehrkräfte können Anträge (Entwürfe) erstellen und an die Schulleitung einreichen.
 	</description>
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<licence>agpl</licence>
 	<author>Edukonline</author>
 	<namespace>KursUmstufung</namespace>
@@ -25,8 +25,7 @@
 	</navigations>
 	<repository>https://github.com/Edukonline/IGS_umstufung_app</repository>
 	<bugs>https://github.com/Edukonline/IGS_umstufung_app/issues</bugs>
-	<screenshot>https://raw.githubusercontent.com/Edukonline/IGS_umstufung_app/main/img/screenshot-dashboard.png</screenshot>
-	<screenshot>https://raw.githubusercontent.com/Edukonline/IGS_umstufung_app/main/img/screenshot-settings.png</screenshot>
+	<screenshot>https://raw.githubusercontent.com/Edukonline/IGS_umstufung_app/main/img/app.png</screenshot>
 
 	<settings>
 		<admin>OCA\KursUmstufung\Settings\Admin</admin>

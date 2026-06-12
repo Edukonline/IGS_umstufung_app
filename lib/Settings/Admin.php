@@ -1,36 +1,30 @@
 <?php
 namespace OCA\KursUmstufung\Settings;
 
+use OCA\KursUmstufung\Service\ConfigService;
+use OCP\AppFramework\Http\TemplateResponse;
 use OCP\Settings\ISettings;
-use OCP\IConfig;
-use OCP\Template;
 
 class Admin implements ISettings {
-    private IConfig $config;
+    private ConfigService $configService;
 
-    public function __construct(IConfig $config) {
-        $this->config = $config;
+    public function __construct(ConfigService $configService) {
+        $this->configService = $configService;
     }
 
-    /**
-     * Gibt das Template für die Einstellungsseite zurück
-     */
-    public function getForm() {
-        $adminGroup = $this->config->getAppValue('kursumstufung', 'admin_group', 'schulleitung');
-        return new \OCP\AppFramework\Http\TemplateResponse('kursumstufung', 'settings/admin', ['adminGroup' => $adminGroup], '');
+    public function getForm(): TemplateResponse {
+        return new TemplateResponse('kursumstufung', 'settings/admin', [
+            'adminGroup' => $this->configService->getAdminGroup(),
+            'subjects' => implode("\n", $this->configService->getSubjects()),
+            'classes' => implode("\n", $this->configService->getClasses()),
+        ], '');
     }
 
-    /**
-     * Sektion unter der die Einstellung auftaucht ('additional' = 'Zusätzliche Einstellungen')
-     */
-    public function getSection() {
+    public function getSection(): string {
         return 'additional';
     }
 
-    /**
-     * Priorität für die Sortierung (0-100)
-     */
-    public function getPriority() {
+    public function getPriority(): int {
         return 50;
     }
 }

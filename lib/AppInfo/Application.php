@@ -1,50 +1,24 @@
 <?php
 namespace OCA\KursUmstufung\AppInfo;
 
-use OCA\KursUmstufung\Controller\RequestController;
-use OCA\KursUmstufung\Controller\PageController;
-use OCA\KursUmstufung\Service\RequestService;
-use OCA\KursUmstufung\Db\RequestMapper;
+use OCA\KursUmstufung\Notification\Notifier;
 use OCP\AppFramework\App;
-use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IBootContext;
+use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 
 class Application extends App implements IBootstrap {
+    public const APP_ID = 'kursumstufung';
+
     public function __construct(array $urlParams = []) {
-        parent::__construct('kursumstufung', $urlParams);
+        parent::__construct(self::APP_ID, $urlParams);
     }
 
     public function register(IRegistrationContext $context): void {
-        // Services registrieren
-        $context->registerService('RequestService', function($c) {
-            return new RequestService(
-                $c->get('RequestMapper'),
-                $c->get(\OCP\IUserManager::class)
-            );
-        });
-
-        $context->registerService('RequestMapper', function($c) {
-            return new RequestMapper(
-                $c->get(\OCP\IDBConnection::class)
-            );
-        });
-
-        // Controller registrieren
-        $context->registerService('RequestController', function($c) {
-            return new RequestController(
-                'kursumstufung',
-                $c->get(\OCP\IRequest::class),
-                $c->get('RequestService')
-            );
-        });
-
-        $context->registerService('PageController', function($c) {
-            return new PageController(
-                'kursumstufung',
-                $c->get(\OCP\IRequest::class)
-            );
-        });
+        // Controller und Services werden vom Nextcloud-Container automatisch
+        // per Konstruktor-Typehints aufgelöst (Auto-Wiring) — keine manuellen
+        // Factory-Closures mehr nötig.
+        $context->registerNotifierService(Notifier::class);
     }
 
     public function boot(IBootContext $context): void {

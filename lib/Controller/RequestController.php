@@ -1,131 +1,142 @@
 <?php
 namespace OCA\KursUmstufung\Controller;
 
+use OCA\KursUmstufung\Exception\ForbiddenException;
+use OCA\KursUmstufung\Exception\ValidationException;
+use OCA\KursUmstufung\Service\AuthorizationService;
 use OCA\KursUmstufung\Service\RequestService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class RequestController extends Controller {
-    private $service;
+    private RequestService $service;
+    private AuthorizationService $auth;
+    private LoggerInterface $logger;
 
-    public function __construct($AppName, IRequest $request, RequestService $service) {
-        parent::__construct($AppName, $request);
+    public function __construct(
+        string $appName,
+        IRequest $request,
+        RequestService $service,
+        AuthorizationService $auth,
+        LoggerInterface $logger
+    ) {
+        parent::__construct($appName, $request);
         $this->service = $service;
+        $this->auth = $auth;
+        $this->logger = $logger;
     }
 
     /**
      * @NoAdminRequired
      */
-    public function test() {
-        return new DataResponse(['status' => 'OK', 'message' => 'API is reachable']);
-    }
+    public function index(?string $schoolYear = null): DataResponse {
+        return $this->guard(function () use ($schoolYear) {
+            $userId = $this->auth->getUserId();
+            $isSchulleitung = $this->auth->isSchulleitung($userId);
+            $requests = $isSchulleitung
+                ? $this->service->findAllSubmitted($schoolYear)
+                : $this->service->findAllByUser($userId, $schoolYear);
 
-    private function getUserId() {
-        $userSession = \OC::$server->getUserSession();
-        $user = $userSession->getUser();
-        return $user ? $user->getUID() : '';
-    }
-
-    private function isSchulleitung() {
-        $userId = $this->getUserId();
-        if (empty($userId)) {
-            return false;
-        }
-        $groupManager = \OC::$server->getGroupManager();
-        $adminGroup = \OC::$server->getConfig()->getAppValue('kursumstufung', 'admin_group', 'schulleitung');
-        return $groupManager->isAdmin($userId) || $groupManager->isInGroup($userId, $adminGroup);
-    }
-
-    /**
-     * @NoAdminRequired
-     */
-    public function index() {
-        try {
-            $userId = $this->getUserId();
-            if ($this->isSchulleitung()) {
-                $requests = $this->service->findAllSubmitted();
-            } else {
-                $requests = $this->service->findAllByUser($userId);
-            }
             return new DataResponse([
-                'isSchulleitung' => $this->isSchulleitung(),
-                'requests' => $requests
+                'isSchulleitung' => $isSchulleitung,
+                'requests' => $requests,
             ]);
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 500);
-        }
+        });
     }
 
     /**
      * @NoAdminRequired
      */
-    public function create() {
-        $userId = $this->getUserId();
-        $studentName = $this->request->getParam('studentName', '');
-        $class = $this->request->getParam('class', '');
-        $subject = $this->request->getParam('subject', '');
-        $oldLevel = $this->request->getParam('oldLevel', '');
-        $newLevel = $this->request->getParam('newLevel', '');
-        $reason = $this->request->getParam('reason', '');
-
-        try {
-            $request = $this->service->create($userId, $studentName, $class, $subject, $oldLevel, $newLevel, $reason);
+    public function create(): DataResponse {
+        return $this->guard(function () {
+            $request = $this->service->create($this->auth->getUserId(), $this->payload());
             return new DataResponse($request);
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 500);
-        }
+        });
     }
 
     /**
      * @NoAdminRequired
      */
-    public function update($id) {
-        $userId = $this->getUserId();
-        $studentName = $this->request->getParam('studentName', '');
-        $class = $this->request->getParam('class', '');
-        $subject = $this->request->getParam('subject', '');
-        $oldLevel = $this->request->getParam('oldLevel', '');
-        $newLevel = $this->request->getParam('newLevel', '');
-        $reason = $this->request->getParam('reason', '');
-
-        try {
-            // Sicherstellen, dass ID eine Zahl ist
-            $requestId = (int)$id;
-            $request = $this->service->update($requestId, $userId, $studentName, $class, $subject, $oldLevel, $newLevel, $reason);
+    public function update(int $id): DataResponse {
+        return $this->guard(function () use ($id) {
+            $request = $this->service->update($id, $this->auth->getUserId(), $this->payload());
             return new DataResponse($request);
-        } catch (\Exception $e) {
-            return new DataResponse([
-                'error' => 'Fehler beim Aktualisieren: ' . $e->getMessage(),
-                'id' => $id,
-                'userId' => $userId
-            ], 500);
-        }
+        });
     }
 
     /**
      * @NoAdminRequired
      */
-    public function destroy($id) {
-        $userId = $this->getUserId();
-        try {
-            $this->service->delete($id, $userId);
+    public function destroy(int $id): DataResponse {
+        return $this->guard(function () use ($id) {
+            $this->service->delete($id, $this->auth->getUserId());
             return new DataResponse(['status' => 'success']);
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 500);
-        }
+        });
     }
 
     /**
      * @NoAdminRequired
      */
-    public function submitAll() {
-        $userId = $this->getUserId();
+    public function submitAll(): DataResponse {
+        return $this->guard(function () {
+            $count = $this->service->submitAllDraftsForUser($this->auth->getUserId());
+            return new DataResponse(['status' => 'success', 'submitted' => $count]);
+        });
+    }
+
+    /**
+     * Genehmigt oder lehnt einen Antrag ab. Nur für die Schulleitung.
+     * @NoAdminRequired
+     */
+    public function decide(int $id, string $decision): DataResponse {
+        return $this->guard(function () use ($id, $decision) {
+            if (!$this->auth->isSchulleitung()) {
+                throw new ForbiddenException('Nur die Schulleitung darf entscheiden.');
+            }
+            $reason = (string)$this->request->getParam('decisionReason', '');
+            $request = $this->service->decide($id, $this->auth->getUserId(), $decision, $reason);
+            return new DataResponse($request);
+        });
+    }
+
+    /* -------------------------------------------------- Helpers */
+
+    /** @return array<string,mixed> */
+    private function payload(): array {
+        return [
+            'studentName' => $this->request->getParam('studentName', ''),
+            'class' => $this->request->getParam('class', ''),
+            'subject' => $this->request->getParam('subject', ''),
+            'oldLevel' => $this->request->getParam('oldLevel', ''),
+            'newLevel' => $this->request->getParam('newLevel', ''),
+            'reason' => $this->request->getParam('reason', ''),
+        ];
+    }
+
+    /**
+     * Einheitliches Error-Handling: fachliche Fehler werden auf passende
+     * HTTP-Codes gemappt, unerwartete Fehler serverseitig geloggt und dem
+     * Client nur generisch gemeldet (kein Leak von internen Details).
+     */
+    private function guard(callable $fn): DataResponse {
         try {
-            $this->service->submitAllDraftsForUser($userId);
-            return new DataResponse(['status' => 'success']);
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 500);
+            return $fn();
+        } catch (ValidationException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Antrag nicht gefunden.'], Http::STATUS_NOT_FOUND);
+        } catch (\Throwable $e) {
+            $this->logger->error('Unerwarteter Fehler im RequestController: ' . $e->getMessage(), [
+                'app' => 'kursumstufung',
+                'exception' => $e,
+            ]);
+            return new DataResponse(['error' => 'Ein interner Fehler ist aufgetreten.'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -1,0 +1,25 @@
+erDiagram
+  subgraph Metadata
+    %% Project: KursUmstufung | Ver: 1.0.3 | Date: 2026-06-05
+  end
+
+  kurs_umstufung_requests {
+    integer id PK
+    string user_id "Nextcloud User ID"
+    string student_name
+    string student_class "nullable"
+    string subject
+    string old_level
+    string new_level
+    text reason "nullable"
+    string status "draft / submitted"
+    datetime created_at
+    datetime updated_at "nullable"
+  }
+
+  oc_users {
+    string uid PK
+    string displayname
+  }
+
+  oc_users ||--o{ kurs_umstufung_requests : "creates (logical relation)"
