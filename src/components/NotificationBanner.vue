@@ -1,14 +1,16 @@
 <template>
     <transition name="fade">
-        <div v-if="notification.show" :class="['notification-banner', notification.type]">
-            <span class="icon">{{ notification.type === 'success' ? '✅' : '⚠️' }}</span>
+        <div v-if="notification.show" :class="['notification-banner', notification.type]" role="alert">
+            <span class="icon" aria-hidden="true">{{ notification.type === 'success' ? '✅' : '⚠️' }}</span>
             <span class="message">{{ notification.message }}</span>
-            <button class="close-btn" @click="$emit('close')">&times;</button>
+            <button type="button" class="close-btn" :aria-label="t('Schließen')" @click="$emit('close')">&times;</button>
         </div>
     </transition>
 </template>
 
 <script>
+import { t } from '../l10n.js'
+
 export default {
     name: 'NotificationBanner',
     props: {
@@ -18,6 +20,7 @@ export default {
         },
     },
     emits: ['close'],
+    methods: { t },
 }
 </script>
 
