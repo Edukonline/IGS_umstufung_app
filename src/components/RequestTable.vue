@@ -1,17 +1,18 @@
 <template>
     <div class="table-container">
         <table class="table-styled">
+            <caption class="visually-hidden">{{ t('Übersicht der Umstufungsanträge') }}</caption>
             <thead>
                 <tr>
-                    <th v-if="isSchulleitung">{{ t('Lehrkraft') }}</th>
-                    <th>{{ t('Schüler:in') }}</th>
-                    <th>{{ t('Klasse') }}</th>
-                    <th>{{ t('Fach') }}</th>
-                    <th>{{ t('Von') }}</th>
-                    <th>{{ t('Nach') }}</th>
-                    <th>{{ t('Datum') }}</th>
-                    <th>{{ t('Status') }}</th>
-                    <th class="right">{{ t('Aktionen') }}</th>
+                    <th v-if="isSchulleitung" scope="col">{{ t('Lehrkraft') }}</th>
+                    <th scope="col">{{ t('Schüler:in') }}</th>
+                    <th scope="col">{{ t('Klasse') }}</th>
+                    <th scope="col">{{ t('Fach') }}</th>
+                    <th scope="col">{{ t('Von') }}</th>
+                    <th scope="col">{{ t('Nach') }}</th>
+                    <th scope="col">{{ t('Datum') }}</th>
+                    <th scope="col">{{ t('Status') }}</th>
+                    <th class="right" scope="col">{{ t('Aktionen') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,7 +28,7 @@
                         <span :class="['status-badge', request.status]">{{ statusLabel(request.status) }}</span>
                         <div v-if="isDecided(request)" class="decision-info">
                             {{ request.decidedByName || request.decidedBy }}
-                            <span v-if="request.decisionReason" :title="request.decisionReason">💬</span>
+                            <span v-if="request.decisionReason" role="img" :title="request.decisionReason" :aria-label="t('Begründung vorhanden')">💬</span>
                         </div>
                     </td>
                     <td class="right">
@@ -202,5 +203,16 @@ td.right {
     text-align: center;
     padding: 50px;
     color: var(--color-text-maxcontrast);
+}
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 </style>

@@ -13,7 +13,7 @@
             <NotificationBanner :notification="notification" @close="notification.show = false" />
 
             <div class="page">
-                <div v-if="loading" class="centered">
+                <div v-if="loading" class="centered" role="status" aria-live="polite">
                     <div class="spinner"></div>
                     <p>{{ t('Lade Daten...') }}</p>
                 </div>
@@ -36,8 +36,8 @@
                     </header>
 
                     <div v-if="requests.length > 0" class="filters">
-                        <input v-model="searchQuery" type="text" class="filter-input" :placeholder="t('🔍 Suche nach Schülername...')">
-                        <select v-if="availableYears.length > 1" v-model="yearFilter" class="filter-input year">
+                        <input v-model="searchQuery" type="text" class="filter-input" :aria-label="t('Suche nach Schülername')" :placeholder="t('🔍 Suche nach Schülername...')">
+                        <select v-if="availableYears.length > 1" v-model="yearFilter" class="filter-input year" :aria-label="t('Schuljahr filtern')">
                             <option value="">{{ t('Alle Schuljahre') }}</option>
                             <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
                         </select>
@@ -71,11 +71,11 @@
 
             <!-- Entscheidungs-Dialog (Schulleitung) -->
             <div v-if="decision.show" class="modal-overlay" @click.self="closeDecision">
-                <div class="modal">
-                    <h3>{{ decision.value === STATUS.APPROVED ? t('Antrag genehmigen') : t('Antrag ablehnen') }}</h3>
+                <div ref="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="decision-title" @keydown="onModalKeydown">
+                    <h3 id="decision-title">{{ decision.value === STATUS.APPROVED ? t('Antrag genehmigen') : t('Antrag ablehnen') }}</h3>
                     <p class="modal-sub">{{ decision.request && decision.request.studentName }} · {{ decision.request && decision.request.subject }}</p>
-                    <label class="form-label">{{ decision.value === STATUS.REJECTED ? t('Begründung (erforderlich)') : t('Kommentar (optional)') }}</label>
-                    <textarea v-model="decision.reason" class="modal-input" rows="4"></textarea>
+                    <label class="form-label" for="decision-reason">{{ decision.value === STATUS.REJECTED ? t('Begründung (erforderlich)') : t('Kommentar (optional)') }}</label>
+                    <textarea id="decision-reason" ref="decisionInput" v-model="decision.reason" class="modal-input" rows="4"></textarea>
                     <div class="modal-actions">
                         <button
                             :class="['primary', decision.value === STATUS.REJECTED ? 'danger' : '']"
@@ -131,6 +131,7 @@ export default {
             yearFilter: '',
             notification: { show: false, message: '', type: 'success' },
             decision: { show: false, request: null, value: '', reason: '' },
+            decisionTrigger: null,
         }
     },
     computed: {
@@ -237,10 +238,51 @@ export default {
             }
         },
         openDecision(request, value) {
+            this.decisionTrigger = document.activeElement
             this.decision = { show: true, request, value, reason: '' }
+            this.$nextTick(() => {
+                if (this.$refs.decisionInput) {
+                    this.$refs.decisionInput.focus()
+                }
+            })
         },
         closeDecision() {
             this.decision.show = false
+            const trigger = this.decisionTrigger
+            this.decisionTrigger = null
+            this.$nextTick(() => {
+                if (trigger && typeof trigger.focus === 'function') {
+                    trigger.focus()
+                }
+            })
+        },
+        onModalKeydown(e) {
+            if (e.key === 'Escape') {
+                this.closeDecision()
+                return
+            }
+            if (e.key !== 'Tab') {
+                return
+            }
+            const modal = this.$refs.modal
+            if (!modal) {
+                return
+            }
+            const focusables = modal.querySelectorAll(
+                'button, textarea, input, select, [href], [tabindex]:not([tabindex="-1"])',
+            )
+            if (!focusables.length) {
+                return
+            }
+            const first = focusables[0]
+            const last = focusables[focusables.length - 1]
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault()
+                last.focus()
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault()
+                first.focus()
+            }
         },
         async confirmDecision() {
             const { request, value, reason } = this.decision
