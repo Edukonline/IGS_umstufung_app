@@ -9,6 +9,8 @@ author: Edukonline
 
 Die App verwendet eine zentrale Tabelle, die über Nextcloud DBAL in PHP migriert wird (`lib/Migration/`).
 
+**ER-Diagramm:** `docs/diagrams/src/schema.mmd` → `docs/diagrams/img/schema.png` (rendern via `sh docs/render_diagrams.sh`).
+
 ## Model: `kurs_umstufung_requests`
 
 Speichert Entwürfe der Lehrkräfte sowie eingereichte und entschiedene Umstufungsanträge.
