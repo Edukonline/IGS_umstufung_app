@@ -70,29 +70,20 @@
             </div>
 
             <!-- Entscheidungs-Dialog (Schulleitung) -->
-            <div v-if="decision.show" class="modal-overlay" @click.self="closeDecision">
-                <div ref="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="decision-title" @keydown="onModalKeydown">
-                    <h3 id="decision-title">{{ decision.value === STATUS.APPROVED ? t('Antrag genehmigen') : t('Antrag ablehnen') }}</h3>
-                    <p class="modal-sub">{{ decision.request && decision.request.studentName }} · {{ decision.request && decision.request.subject }}</p>
-                    <label class="form-label" for="decision-reason">{{ decision.value === STATUS.REJECTED ? t('Begründung (erforderlich)') : t('Kommentar (optional)') }}</label>
-                    <textarea id="decision-reason" ref="decisionInput" v-model="decision.reason" class="modal-input" rows="4"></textarea>
-                    <div class="modal-actions">
-                        <button
-                            :class="['primary', decision.value === STATUS.REJECTED ? 'danger' : '']"
-                            :disabled="deciding || (decision.value === STATUS.REJECTED && !decision.reason.trim())"
-                            @click="confirmDecision">
-                            {{ deciding ? t('Speichert...') : (decision.value === STATUS.APPROVED ? t('Genehmigen') : t('Ablehnen')) }}
-                        </button>
-                        <button class="cancel-btn" @click="closeDecision">{{ t('Abbrechen') }}</button>
-                    </div>
-                </div>
-            </div>
+            <DecisionDialog
+                v-if="decision.show"
+                :request="decision.request"
+                :value="decision.value"
+                :deciding="deciding"
+                @confirm="confirmDecision"
+                @cancel="closeDecision" />
         </main>
     </div>
 </template>
 
 <script>
 import { loadState } from '@nextcloud/initial-state'
+import DecisionDialog from './components/DecisionDialog.vue'
 import NotificationBanner from './components/NotificationBanner.vue'
 import RequestForm from './components/RequestForm.vue'
 import RequestTable from './components/RequestTable.vue'
@@ -111,7 +102,7 @@ function initialState(key, fallback) {
 
 export default {
     name: 'App',
-    components: { NotificationBanner, RequestForm, RequestTable },
+    components: { DecisionDialog, NotificationBanner, RequestForm, RequestTable },
     data() {
         return {
             STATUS,
@@ -130,8 +121,7 @@ export default {
             searchQuery: '',
             yearFilter: '',
             notification: { show: false, message: '', type: 'success' },
-            decision: { show: false, request: null, value: '', reason: '' },
-            decisionTrigger: null,
+            decision: { show: false, request: null, value: '' },
         }
     },
     computed: {
@@ -238,54 +228,13 @@ export default {
             }
         },
         openDecision(request, value) {
-            this.decisionTrigger = document.activeElement
-            this.decision = { show: true, request, value, reason: '' }
-            this.$nextTick(() => {
-                if (this.$refs.decisionInput) {
-                    this.$refs.decisionInput.focus()
-                }
-            })
+            this.decision = { show: true, request, value }
         },
         closeDecision() {
             this.decision.show = false
-            const trigger = this.decisionTrigger
-            this.decisionTrigger = null
-            this.$nextTick(() => {
-                if (trigger && typeof trigger.focus === 'function') {
-                    trigger.focus()
-                }
-            })
         },
-        onModalKeydown(e) {
-            if (e.key === 'Escape') {
-                this.closeDecision()
-                return
-            }
-            if (e.key !== 'Tab') {
-                return
-            }
-            const modal = this.$refs.modal
-            if (!modal) {
-                return
-            }
-            const focusables = modal.querySelectorAll(
-                'button, textarea, input, select, [href], [tabindex]:not([tabindex="-1"])',
-            )
-            if (!focusables.length) {
-                return
-            }
-            const first = focusables[0]
-            const last = focusables[focusables.length - 1]
-            if (e.shiftKey && document.activeElement === first) {
-                e.preventDefault()
-                last.focus()
-            } else if (!e.shiftKey && document.activeElement === last) {
-                e.preventDefault()
-                first.focus()
-            }
-        },
-        async confirmDecision() {
-            const { request, value, reason } = this.decision
+        async confirmDecision(reason) {
+            const { request, value } = this.decision
             this.deciding = true
             try {
                 const updated = await api.decide(request.id, value, reason)
@@ -451,61 +400,5 @@ export default {
 .submit-all-btn:disabled {
     opacity: 0.6;
     cursor: default;
-}
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-.modal {
-    background: var(--color-main-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-large, 12px);
-    padding: 28px;
-    width: min(480px, 90vw);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
-.modal h3 {
-    margin: 0 0 4px;
-}
-.modal-sub {
-    margin: 0 0 16px;
-    color: var(--color-text-maxcontrast);
-}
-.form-label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    font-size: 0.85em;
-    color: var(--color-text-maxcontrast);
-}
-.modal-input {
-    width: 100%;
-    padding: 10px;
-    border-radius: var(--border-radius, 8px);
-    background: var(--color-main-background);
-    border: 1px solid var(--color-border-dark, var(--color-border));
-    color: var(--color-main-text);
-    resize: vertical;
-}
-.modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-}
-.primary.danger {
-    background: var(--color-error, #c0392b);
-}
-.cancel-btn {
-    background: transparent;
-    border: 1px solid var(--color-border-dark, var(--color-border));
-    color: var(--color-text-maxcontrast);
-    padding: 10px 20px;
-    border-radius: var(--border-radius, 8px);
-    cursor: pointer;
 }
 </style>
