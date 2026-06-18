@@ -60,9 +60,7 @@ class Notifier implements INotifier {
                 return $notification;
 
             default:
-                // \InvalidArgumentException ist über alle NC-Versionen 25–35 der
-            // dokumentierte Weg, eine unbekannte Notification abzulehnen.
-            throw new \InvalidArgumentException();
+                throw new \InvalidArgumentException();
         }
     }
 }
