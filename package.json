@@ -6,7 +6,9 @@
   "scripts": {
     "build": "webpack --node-env production --progress",
     "dev": "webpack --node-env development --progress",
-    "watch": "webpack --node-env development --progress --watch"
+    "watch": "webpack --node-env development --progress --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@nextcloud/axios": "^2.1.0",
@@ -15,6 +17,10 @@
     "vue": "^3.3.0"
   },
   "devDependencies": {
-    "@nextcloud/webpack-vue-config": "^6.0.0"
+    "@nextcloud/webpack-vue-config": "^6.0.0",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
   }
 }
