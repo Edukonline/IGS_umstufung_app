@@ -30,7 +30,8 @@ class RequestMapper extends QBMapper {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from($this->tableName)
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->isNull('deleted_at'));
 
         if ($schoolYear !== null && $schoolYear !== '') {
             $qb->andWhere($qb->expr()->eq('school_year', $qb->createNamedParameter($schoolYear)));
@@ -51,7 +52,8 @@ class RequestMapper extends QBMapper {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from($this->tableName)
-           ->where($qb->expr()->neq('status', $qb->createNamedParameter(RequestStatus::DRAFT)));
+           ->where($qb->expr()->neq('status', $qb->createNamedParameter(RequestStatus::DRAFT)))
+           ->andWhere($qb->expr()->isNull('deleted_at'));
 
         if ($schoolYear !== null && $schoolYear !== '') {
             $qb->andWhere($qb->expr()->eq('school_year', $qb->createNamedParameter($schoolYear)));
@@ -73,7 +75,8 @@ class RequestMapper extends QBMapper {
         $qb->update($this->tableName)
            ->set('status', $qb->createNamedParameter(RequestStatus::SUBMITTED))
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter(RequestStatus::DRAFT)));
+           ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter(RequestStatus::DRAFT)))
+           ->andWhere($qb->expr()->isNull('deleted_at'));
 
         return $qb->executeStatement();
     }

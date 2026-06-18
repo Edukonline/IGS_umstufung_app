@@ -3,6 +3,7 @@
         <div v-if="notification.show" :class="['notification-banner', notification.type]" role="alert">
             <span class="icon" aria-hidden="true">{{ notification.type === 'success' ? '✅' : '⚠️' }}</span>
             <span class="message">{{ notification.message }}</span>
+            <button v-if="notification.action" type="button" class="action-btn" @click="$emit('action')">{{ notification.action.label }}</button>
             <button type="button" class="close-btn" :aria-label="t('Schließen')" @click="$emit('close')">&times;</button>
         </div>
     </transition>
@@ -19,7 +20,7 @@ export default {
             required: true,
         },
     },
-    emits: ['close'],
+    emits: ['close', 'action'],
     methods: { t },
 }
 </script>
@@ -46,6 +47,15 @@ export default {
 .notification-banner .message {
     flex-grow: 1;
     font-weight: 600;
+}
+.action-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: inherit;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--border-radius, 6px);
+    cursor: pointer;
 }
 .close-btn {
     background: transparent;

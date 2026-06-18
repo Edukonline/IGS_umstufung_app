@@ -19,6 +19,9 @@ export default {
     remove(id) {
         return axios.delete(url(`/api/requests/${id}`)).then((r) => r.data)
     },
+    restore(id) {
+        return axios.post(url(`/api/requests/${id}/restore`)).then((r) => r.data)
+    },
     submitAll() {
         return axios.post(url('/api/submit_all')).then((r) => r.data)
     },

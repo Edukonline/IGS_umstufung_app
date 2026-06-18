@@ -84,6 +84,18 @@ class RequestController extends Controller {
     }
 
     /**
+     * Stellt einen soft-gelöschten Antrag wieder her (Undo).
+     * @NoAdminRequired
+     */
+    #[NoAdminRequired]
+    public function restore(int $id): DataResponse {
+        return $this->guard(function () use ($id) {
+            $request = $this->service->restore($id, $this->auth->getUserId());
+            return new DataResponse($request);
+        });
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[NoAdminRequired]

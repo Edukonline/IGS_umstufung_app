@@ -30,6 +30,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCreatedAt(\DateTime $createdAt)
  * @method \DateTime|null getUpdatedAt()
  * @method void setUpdatedAt(\DateTime $updatedAt)
+ * @method \DateTime|null getDeletedAt()
+ * @method void setDeletedAt(?\DateTime $deletedAt)
  */
 class Request extends Entity implements \JsonSerializable {
     protected $userId;
@@ -47,11 +49,13 @@ class Request extends Entity implements \JsonSerializable {
     protected $decisionReason;
     protected $createdAt;
     protected $updatedAt;
+    protected $deletedAt;
 
     public function __construct() {
         $this->addType('id', 'integer');
         $this->addType('createdAt', 'datetime');
         $this->addType('updatedAt', 'datetime');
+        $this->addType('deletedAt', 'datetime');
     }
 
     /**

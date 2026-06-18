@@ -1,7 +1,7 @@
 ---
 title: KursUmstufung App (Nextcloud)
-version: 1.0.4
-last_updated: 2026-06-12
+version: 1.0.5
+last_updated: 2026-06-18
 author: Edukonline
 ---
 
