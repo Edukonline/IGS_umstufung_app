@@ -5,6 +5,8 @@ use OCA\KursUmstufung\Constants\CourseLevel;
 use OCA\KursUmstufung\Service\AuthorizationService;
 use OCA\KursUmstufung\Service\ConfigService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\IRequest;
@@ -31,6 +33,8 @@ class PageController extends Controller {
      * @NoAdminRequired
      * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function index(): TemplateResponse {
         // Source of Truth fürs Frontend serverseitig bereitstellen, statt
         // Rolle/Fächer/Klassen im Client-Bundle einzubetonieren.

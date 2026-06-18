@@ -8,6 +8,7 @@ use OCA\KursUmstufung\Service\RequestService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
@@ -33,6 +34,7 @@ class RequestController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function index(?string $schoolYear = null): DataResponse {
         return $this->guard(function () use ($schoolYear) {
             $userId = $this->auth->getUserId();
@@ -51,6 +53,7 @@ class RequestController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function create(): DataResponse {
         return $this->guard(function () {
             $request = $this->service->create($this->auth->getUserId(), $this->payload());
@@ -61,6 +64,7 @@ class RequestController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function update(int $id): DataResponse {
         return $this->guard(function () use ($id) {
             $request = $this->service->update($id, $this->auth->getUserId(), $this->payload());
@@ -71,6 +75,7 @@ class RequestController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function destroy(int $id): DataResponse {
         return $this->guard(function () use ($id) {
             $this->service->delete($id, $this->auth->getUserId());
@@ -81,6 +86,7 @@ class RequestController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function submitAll(): DataResponse {
         return $this->guard(function () {
             $count = $this->service->submitAllDraftsForUser($this->auth->getUserId());
@@ -92,6 +98,7 @@ class RequestController extends Controller {
      * Genehmigt oder lehnt einen Antrag ab. Nur für die Schulleitung.
      * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function decide(int $id, string $decision): DataResponse {
         return $this->guard(function () use ($id, $decision) {
             if (!$this->auth->isSchulleitung()) {
