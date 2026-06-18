@@ -17,24 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .filter(function(s) { return s.length > 0; });
     }
 
-    function post(path, body) {
-        return fetch(OC.generateUrl('apps/kursumstufung/api/settings/' + path), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'requesttoken': OC.requestToken,
-            },
-            body: JSON.stringify(body),
-        }).then(function(response) {
-            return response.json().then(function(data) {
-                if (!response.ok || data.status !== 'success') {
-                    throw new Error(data.error || 'Speichern fehlgeschlagen.');
-                }
-                return data;
-            });
-        });
-    }
-
     function showError(message) {
         if (msgSpan) { msgSpan.style.display = 'none'; }
         if (errSpan) {
@@ -53,11 +35,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     saveButton.addEventListener('click', function() {
         saveButton.disabled = true;
-        Promise.all([
-            post('adminGroup', { groupName: groupField.value }),
-            post('subjects', { subjects: toLines(subjectsField) }),
-            post('classes', { classes: toLines(classesField) }),
-        ])
+        // Ein atomarer Request — keine Teilspeicherung bei Fehlern mehr.
+        fetch(OC.generateUrl('apps/kursumstufung/api/settings'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'requesttoken': OC.requestToken,
+            },
+            body: JSON.stringify({
+                groupName: groupField.value,
+                subjects: toLines(subjectsField),
+                classes: toLines(classesField),
+            }),
+        })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    if (!response.ok || data.status !== 'success') {
+                        throw new Error(data.error || 'Speichern fehlgeschlagen.');
+                    }
+                    return data;
+                });
+            })
             .then(function() { showSuccess(); })
             .catch(function(error) { showError(error.message); })
             .finally(function() { saveButton.disabled = false; });

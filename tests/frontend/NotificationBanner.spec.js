@@ -25,4 +25,22 @@ describe('NotificationBanner', () => {
         await wrapper.find('.close-btn').trigger('click')
         expect(wrapper.emitted('close')).toHaveLength(1)
     })
+
+    it('renders an action button and emits action when clicked', async () => {
+        const wrapper = mount(NotificationBanner, {
+            props: { notification: { show: true, message: 'Gelöscht', type: 'success', action: { label: 'Rückgängig' } } },
+        })
+        const action = wrapper.find('.action-btn')
+        expect(action.exists()).toBe(true)
+        expect(action.text()).toBe('Rückgängig')
+        await action.trigger('click')
+        expect(wrapper.emitted('action')).toHaveLength(1)
+    })
+
+    it('shows no action button when no action is provided', () => {
+        const wrapper = mount(NotificationBanner, {
+            props: { notification: { show: true, message: 'x', type: 'success' } },
+        })
+        expect(wrapper.find('.action-btn').exists()).toBe(false)
+    })
 })

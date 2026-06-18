@@ -81,9 +81,34 @@ class RequestService {
         return $this->withNames($this->mapper->update($request));
     }
 
+    /**
+     * Soft-Delete: markiert den Entwurf als gelöscht, statt ihn zu entfernen,
+     * damit er per Undo wiederherstellbar bleibt.
+     */
     public function delete(int $id, string $userId): void {
         $request = $this->getOwnedDraft($id, $userId);
-        $this->mapper->delete($request);
+        $request->setDeletedAt(new \DateTime());
+        $this->mapper->update($request);
+    }
+
+    /**
+     * Stellt einen zuvor (soft-)gelöschten eigenen Antrag wieder her.
+     */
+    public function restore(int $id, string $userId): Request {
+        try {
+            $request = $this->mapper->findById($id);
+        } catch (DoesNotExistException $e) {
+            throw new DoesNotExistException('Antrag nicht gefunden.');
+        }
+        if ($request->getUserId() !== $userId) {
+            throw new ForbiddenException('Kein Zugriff auf diesen Antrag.');
+        }
+        if ($request->getDeletedAt() === null) {
+            throw new ForbiddenException('Dieser Antrag ist nicht gelöscht.');
+        }
+        $request->setDeletedAt(null);
+        $request->setUpdatedAt(new \DateTime());
+        return $this->withNames($this->mapper->update($request));
     }
 
     public function submitAllDraftsForUser(string $userId): int {

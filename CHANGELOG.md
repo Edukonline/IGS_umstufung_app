@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.5] - 2026-06-18
+### Added
+- **Rückgängig beim Löschen**: Löschen erfolgt jetzt als Soft-Delete; ein Undo-Banner stellt versehentlich gelöschte Entwürfe wieder her (neue Spalte `deleted_at`, Migration v1.0.5).
+- **Schuljahres-Default**: Die Übersicht öffnet standardmäßig im aktuellen Schuljahr, sofern dort Anträge existieren.
+
+### Changed
+- **Atomare Einstellungen**: Gruppe, Fächer und Klassen werden in einem validierten Request gespeichert (keine Teilspeicherung mehr).
+- **NC-Kompatibilität**: Controller nutzen jetzt PHP-Attribute (`#[NoAdminRequired]`/`#[NoCSRFRequired]`) zusätzlich zu den Annotationen (NC 25–35).
+- **Wartbarkeit**: Entscheidungs-Dialog in eine eigene, barrierearme Komponente (`DecisionDialog`) ausgelagert; Frontend-Tests (vitest) und Accessibility-Verbesserungen ergänzt.
+
 ## [1.0.4] - 2026-06-12
 ### Added
 - **Genehmigungs-Workflow**: Die Schulleitung kann eingereichte Anträge genehmigen oder mit Begründung ablehnen (Status `approved`/`rejected`).

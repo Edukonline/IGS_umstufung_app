@@ -10,7 +10,7 @@
         </aside>
 
         <main id="app-content">
-            <NotificationBanner :notification="notification" @close="notification.show = false" />
+            <NotificationBanner :notification="notification" @close="dismissNotification" @action="onNotificationAction" />
 
             <div class="page">
                 <div v-if="loading" class="centered" role="status" aria-live="polite">
@@ -91,6 +91,7 @@ import api from './services/api.js'
 import { t } from './l10n.js'
 import { STATUS, DEFAULT_LEVELS } from './constants.js'
 import { buildCsv, downloadCsv } from './utils/csv.js'
+import { currentSchoolYear } from './utils/schoolYear.js'
 
 function initialState(key, fallback) {
     try {
@@ -120,7 +121,10 @@ export default {
             editingRequest: null,
             searchQuery: '',
             yearFilter: '',
-            notification: { show: false, message: '', type: 'success' },
+            yearDefaulted: false,
+            notification: { show: false, message: '', type: 'success', action: null },
+            undoHandler: null,
+            notifyTimer: null,
             decision: { show: false, request: null, value: '' },
         }
     },
@@ -162,11 +166,25 @@ export default {
                 const data = await api.list()
                 this.isSchulleitung = data.isSchulleitung ?? this.isSchulleitung
                 this.requests = data.requests || []
+                this.applyDefaultYear()
             } catch (error) {
                 this.loadError = true
                 this.notify(t('Die Anträge konnten nicht geladen werden.'), 'error')
             } finally {
                 this.loading = false
+            }
+        },
+        applyDefaultYear() {
+            // Standardansicht aufs aktuelle Schuljahr beschränken, sofern dort
+            // Anträge existieren — bändigt die Liste über Jahre. Nur einmalig,
+            // damit eine spätere Nutzerauswahl nicht überschrieben wird.
+            if (this.yearDefaulted) {
+                return
+            }
+            this.yearDefaulted = true
+            const current = currentSchoolYear()
+            if (this.requests.some((r) => r.schoolYear === current)) {
+                this.yearFilter = current
             }
         },
         openNew() {
@@ -201,16 +219,28 @@ export default {
             }
         },
         async deleteRequest(id) {
-            if (!window.confirm(t('Wirklich löschen?'))) {
+            const request = this.requests.find((r) => r.id === id)
+            if (!request) {
                 return
             }
+            // Optimistisch entfernen; der Server löscht soft (wiederherstellbar).
+            this.requests = this.requests.filter((r) => r.id !== id)
             try {
                 await api.remove(id)
-                this.requests = this.requests.filter((r) => r.id !== id)
-                this.notify(t('Eintrag wurde gelöscht'))
             } catch (error) {
+                await this.loadData()
                 this.notify(t('Löschen fehlgeschlagen'), 'error')
+                return
             }
+            this.notifyWithUndo(t('Eintrag gelöscht'), async () => {
+                try {
+                    await api.restore(id)
+                    await this.loadData()
+                    this.notify(t('Wiederhergestellt'))
+                } catch (error) {
+                    this.notify(t('Wiederherstellen fehlgeschlagen'), 'error')
+                }
+            })
         },
         async submitAll() {
             if (!window.confirm(t('Alle Entwürfe jetzt final einreichen? Dies kann nicht rückgängig gemacht werden.'))) {
@@ -270,10 +300,39 @@ export default {
             downloadCsv(`Umstufungen_Export_${today}.csv`, buildCsv(rows))
         },
         notify(message, type = 'success') {
-            this.notification = { show: true, message, type }
+            this.clearUndo()
+            this.notification = { show: true, message, type, action: null }
             if (type === 'success') {
-                setTimeout(() => { this.notification.show = false }, 4000)
+                this.notifyTimer = setTimeout(() => { this.notification.show = false }, 4000)
             }
+        },
+        notifyWithUndo(message, handler) {
+            this.clearUndo()
+            this.undoHandler = handler
+            this.notification = { show: true, message, type: 'success', action: { label: t('Rückgängig') } }
+            this.notifyTimer = setTimeout(() => {
+                this.notification.show = false
+                this.undoHandler = null
+            }, 7000)
+        },
+        onNotificationAction() {
+            const handler = this.undoHandler
+            this.clearUndo()
+            this.notification.show = false
+            if (handler) {
+                handler()
+            }
+        },
+        dismissNotification() {
+            this.clearUndo()
+            this.notification.show = false
+        },
+        clearUndo() {
+            if (this.notifyTimer) {
+                clearTimeout(this.notifyTimer)
+                this.notifyTimer = null
+            }
+            this.undoHandler = null
         },
         errorMessage(error) {
             return error?.response?.data?.error || error?.message || t('Unbekannter Fehler')

@@ -24,11 +24,14 @@ class SettingsController extends Controller {
     }
 
     /**
-     * Speichert die Schulleitungs-Gruppe. CSRF-Schutz ist bewusst aktiv
-     * (kein @NoCSRFRequired) — das Admin-Frontend sendet den requesttoken mit.
+     * Speichert alle Admin-Einstellungen in einem Schritt. Validiert zuerst die
+     * Gruppe und schreibt nur, wenn sie existiert — kein inkonsistenter
+     * Teilzustand mehr. Admin + CSRF sind der korrekte Default (kein
+     * @NoAdminRequired/@NoCSRFRequired).
+     *
      * @AdminRequired
      */
-    public function setAdminGroup(string $groupName): DataResponse {
+    public function save(string $groupName, array $subjects, array $classes): DataResponse {
         $groupName = trim($groupName);
         if ($groupName === '' || !$this->groupManager->groupExists($groupName)) {
             return new DataResponse(
@@ -36,25 +39,16 @@ class SettingsController extends Controller {
                 Http::STATUS_BAD_REQUEST
             );
         }
+
         $this->configService->setAdminGroup($groupName);
-        return new DataResponse(['status' => 'success', 'group' => $groupName]);
-    }
-
-    /**
-     * Speichert die wählbaren Fächer.
-     * @AdminRequired
-     */
-    public function setSubjects(array $subjects): DataResponse {
         $this->configService->setSubjects($subjects);
-        return new DataResponse(['status' => 'success', 'subjects' => $this->configService->getSubjects()]);
-    }
-
-    /**
-     * Speichert die wählbaren Klassen.
-     * @AdminRequired
-     */
-    public function setClasses(array $classes): DataResponse {
         $this->configService->setClasses($classes);
-        return new DataResponse(['status' => 'success', 'classes' => $this->configService->getClasses()]);
+
+        return new DataResponse([
+            'status' => 'success',
+            'group' => $groupName,
+            'subjects' => $this->configService->getSubjects(),
+            'classes' => $this->configService->getClasses(),
+        ]);
     }
 }

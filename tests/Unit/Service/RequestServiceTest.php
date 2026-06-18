@@ -129,6 +129,53 @@ class RequestServiceTest extends TestCase {
         $this->service->delete(1, 'teacher');
     }
 
+    public function testDeleteSoftDeletesInsteadOfRemoving(): void {
+        $request = new Request();
+        $request->setUserId('teacher');
+        $request->setStatus(RequestStatus::DRAFT);
+        $this->mapper->method('findById')->willReturn($request);
+        $this->mapper->expects($this->never())->method('delete');
+        $this->mapper->expects($this->once())
+            ->method('update')
+            ->with($this->callback(static fn (Request $r) => $r->getDeletedAt() instanceof \DateTimeInterface));
+
+        $this->service->delete(1, 'teacher');
+    }
+
+    public function testRestoreRevivesDeletedOwnedRequest(): void {
+        $request = new Request();
+        $request->setUserId('teacher');
+        $request->setStatus(RequestStatus::DRAFT);
+        $request->setDeletedAt(new \DateTime());
+        $this->mapper->method('findById')->willReturn($request);
+        $this->mapper->method('update')->willReturnArgument(0);
+
+        $result = $this->service->restore(1, 'teacher');
+
+        $this->assertNull($result->getDeletedAt());
+    }
+
+    public function testRestoreForbiddenForForeignRequest(): void {
+        $request = new Request();
+        $request->setUserId('other');
+        $request->setStatus(RequestStatus::DRAFT);
+        $request->setDeletedAt(new \DateTime());
+        $this->mapper->method('findById')->willReturn($request);
+
+        $this->expectException(ForbiddenException::class);
+        $this->service->restore(1, 'teacher');
+    }
+
+    public function testRestoreForbiddenWhenNotDeleted(): void {
+        $request = new Request();
+        $request->setUserId('teacher');
+        $request->setStatus(RequestStatus::DRAFT);
+        $this->mapper->method('findById')->willReturn($request);
+
+        $this->expectException(ForbiddenException::class);
+        $this->service->restore(1, 'teacher');
+    }
+
     public function testDecideRejectsInvalidDecision(): void {
         $this->expectException(ValidationException::class);
         $this->service->decide(1, 'head', RequestStatus::DRAFT);

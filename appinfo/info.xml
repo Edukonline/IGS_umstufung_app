@@ -8,7 +8,7 @@
 		Eine Erweiterung zur effizienten Verwaltung von Umstufungsanträgen zwischen verschiedenen Kurs-Niveaus.
 		Lehrkräfte können Anträge (Entwürfe) erstellen und an die Schulleitung einreichen.
 	</description>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 	<licence>agpl</licence>
 	<author>Edukonline</author>
 	<namespace>KursUmstufung</namespace>
