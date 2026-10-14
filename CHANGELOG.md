@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.5] - 2026-06-18
+## [1.0.5] - 2026-10-14
+### Fixed
+- **Aktionen-Spalte war unerreichbar**: Die Antragstabelle wurde ohne Scrollmöglichkeit abgeschnitten (`overflow: hidden`). Unterhalb von rund 1600 px Fensterbreite ließen sich „Genehmigen"/„Ablehnen" und „Bearbeiten"/„Löschen" nicht bedienen — auf einem 1366-px-Laptop fehlten 205 px, auf dem Handy 900 px. Die Tabelle scrollt jetzt waagerecht.
+- **Lesbarkeit im hellen Design**: Schaltflächen und Status-Kennzeichen nutzten `--color-success`/`--color-error` als Textfarbe bzw. ein festes `#fff`. Das sind in Nextcloud Flächenfarben; der Kontrast lag bei 1,18:1 statt der geforderten 4,5:1. Jetzt mit den zugehörigen `*-text`-Variablen gepaart (7,8–8,6:1).
+- **Logflut durch den Notifier**: `Notifier::prepare()` warf `\InvalidArgumentException`, seit Nextcloud 30 veraltet. Je Benachrichtigung entstand ein Logeintrag, auf manchen Serverversionen als Warnung. Jetzt `UnknownNotificationException`, mit Rückfall für NC 25–29.
+
 ### Added
 - **Rückgängig beim Löschen**: Löschen erfolgt jetzt als Soft-Delete; ein Undo-Banner stellt versehentlich gelöschte Entwürfe wieder her (neue Spalte `deleted_at`, Migration v1.0.5).
 - **Schuljahres-Default**: Die Übersicht öffnet standardmäßig im aktuellen Schuljahr, sofern dort Anträge existieren.

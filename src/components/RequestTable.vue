@@ -93,7 +93,12 @@ export default {
 .table-container {
     background: var(--color-main-background);
     border-radius: var(--border-radius-large, 12px);
-    overflow: hidden;
+    /* Waagerecht scrollen statt abschneiden. Mit overflow:hidden lag die Spalte
+       „Aktionen" unterhalb von rund 1600 px Fensterbreite außerhalb des
+       Containers und ließ sich auch nicht erscrollen — Genehmigen/Ablehnen und
+       Bearbeiten/Löschen waren auf einem üblichen Schullaptop unbedienbar. */
+    overflow-x: auto;
+    overflow-y: hidden;
     border: 1px solid var(--color-border);
 }
 .table-styled {
@@ -163,11 +168,11 @@ td.right {
 }
 .status-badge.approved {
     background: rgba(39, 174, 96, 0.15);
-    color: var(--color-success, #27ae60);
+    color: var(--color-success-text, #27ae60);
 }
 .status-badge.rejected {
     background: rgba(192, 57, 43, 0.15);
-    color: var(--color-error, #c0392b);
+    color: var(--color-error-text, #c0392b);
 }
 .decision-info {
     margin-top: 4px;
@@ -182,22 +187,27 @@ td.right {
 .delete-btn,
 .approve-btn,
 .reject-btn {
-    color: #fff;
     border: none;
     padding: 7px 14px;
     border-radius: var(--border-radius, 6px);
     cursor: pointer;
     font-weight: 600;
 }
+/* Hintergrund- und Textfarbe immer als Paar: die *-text-Variablen sind fuer
+   Text auf der jeweiligen Flaeche gedacht. Ein festes #fff ist im hellen
+   Nextcloud-Theme unlesbar, weil --color-success/-error dort helle Toene sind. */
 .edit-btn {
     background: var(--color-primary-element, #2980b9);
+    color: var(--color-primary-element-text, #fff);
 }
 .delete-btn,
 .reject-btn {
     background: var(--color-error, #c0392b);
+    color: var(--color-error-text, #fff);
 }
 .approve-btn {
     background: var(--color-success, #27ae60);
+    color: var(--color-success-text, #fff);
 }
 .empty-state {
     text-align: center;

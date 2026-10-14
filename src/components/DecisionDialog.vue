@@ -133,6 +133,7 @@ export default {
 }
 .primary.danger {
     background: var(--color-error, #c0392b);
+    color: var(--color-error-text, #fff);
 }
 .cancel-btn {
     background: transparent;

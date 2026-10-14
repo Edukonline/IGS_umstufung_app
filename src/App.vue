@@ -448,7 +448,7 @@ export default {
 .submit-all-btn {
     width: 100%;
     background: var(--color-success, #27ae60);
-    color: #fff;
+    color: var(--color-success-text, #fff);
     padding: 18px;
     font-weight: bold;
     border: none;
