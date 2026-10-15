@@ -7,6 +7,7 @@ use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 use OCP\Notification\INotification;
 use OCP\Notification\INotifier;
+use OCP\Notification\UnknownNotificationException;
 
 class Notifier implements INotifier {
     private IFactory $l10nFactory;
@@ -27,9 +28,7 @@ class Notifier implements INotifier {
 
     public function prepare(INotification $notification, string $languageCode): INotification {
         if ($notification->getApp() !== NotificationService::APP_ID) {
-            // \InvalidArgumentException ist über alle NC-Versionen 25–35 der
-            // dokumentierte Weg, eine unbekannte Notification abzulehnen.
-            throw new \InvalidArgumentException();
+            throw $this->unknownNotification();
         }
 
         $l = $this->l10nFactory->get(NotificationService::APP_ID, $languageCode);
@@ -60,7 +59,23 @@ class Notifier implements INotifier {
                 return $notification;
 
             default:
-                throw new \InvalidArgumentException();
+                throw $this->unknownNotification();
         }
+    }
+
+    /**
+     * Seit Nextcloud 30 ist \InvalidArgumentException hier veraltet. Wer sie
+     * weiter wirft, erzeugt pro Benachrichtigung einen Logeintrag — auf
+     * manchen Serverversionen als Warnung, was das Protokoll flutet.
+     *
+     * UnknownNotificationException erbt von \InvalidArgumentException, deshalb
+     * verstehen auch ältere Server den Wurf. Auf NC 25–29, wo die Klasse noch
+     * fehlt, bleibt der alte Weg — die App unterstützt laut info.xml NC 25–35.
+     */
+    private function unknownNotification(): \InvalidArgumentException {
+        if (class_exists(UnknownNotificationException::class)) {
+            return new UnknownNotificationException();
+        }
+        return new \InvalidArgumentException();
     }
 }
